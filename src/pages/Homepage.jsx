@@ -16,6 +16,8 @@ const Homepage = () => {
   const imgCtx = useContext(imageContext);
   const cropperRef = useRef(null);
   const imgSelected = imgCtx.selectedImage;
+  const [imgWidth, setImgWidth] = useState("");
+  const [imgHeight, setImgHeight] = useState("");
 
   useEffect(() => {
     const imgUrl = imgCtx.selectedImage.map((item) => {
@@ -24,12 +26,13 @@ const Homepage = () => {
     setImage(imgUrl[currIndex]);
   }, [imgCtx.selectedImage, currIndex]);
   useEffect(() => {
-    
     if (!!image) {
-        console.log("runned")
+      console.log("runned");
       const fn = async () => {
         const { width, height } = await getImageDimensions(image);
-        console.log(width, height);
+        setImgWidth(width);
+        setImgHeight(height);
+        console.log(height,width)
       };
       fn();
     }
@@ -73,6 +76,20 @@ const Homepage = () => {
         });
         const options = {
           suggestedName: filename,
+          types: [
+            {
+              description: "PNG Image",
+              accept: {
+                "image/png": [".png"],
+              },
+            },
+            {
+              description: "JPEG Image",
+              accept: {
+                "image/jpeg": [".jpeg", ".jpg"],
+              },
+            },
+          ],
         };
         const handle = await window.showSaveFilePicker(options);
         const writable = await handle.createWritable();
@@ -106,6 +123,7 @@ const Homepage = () => {
                 multiple
                 accept="image/*,.jpeg,.jpg,.png"
                 onChange={handleFileChange}
+                webkitdirectory=""
                 style={{ display: "none" }}
               />
             </div>
@@ -113,20 +131,23 @@ const Homepage = () => {
 
           {imgSelected.length !== 0 && (
             <section>
-              <div style={{ width: "100%", padding: "10px", margin: "20px" }}>
+              <div style={{ height:"70dvh",maxWidth:"2000px", padding: "10px", margin: "20px" }}>
                 <Cropper
                   src={image}
-                  style={{ maxHeight: "70dvh", width: "100%" }}
+                  style={{ height:"70dvh", width: `700px` }}
                   guides={true}
                   ref={cropperRef}
                   initialAspectRatio={1}
                   viewMode={1}
                   minCropBoxHeight={10}
                   minCropBoxWidth={10}
-                  background={true}
-                  responsive={true}
-                  autoCropArea={1}
-                  checkOrientation={false}
+                  // background={true}
+                  // responsive={true}
+                  // autoCropArea={1}
+                  // checkOrientation={false}
+                  // dragMode="none"
+                 
+                  // zoomable={false}
                 />
               </div>
               <div className={classes.btn_container}>
