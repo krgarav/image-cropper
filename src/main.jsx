@@ -5,12 +5,15 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import Imageprovider from "./store/image-provider.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
-      <ToastContainer />
+      <Imageprovider>
+        <App />
+        <ToastContainer />
+      </Imageprovider>
     </BrowserRouter>
   </React.StrictMode>
 );
