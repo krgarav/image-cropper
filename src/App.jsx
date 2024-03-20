@@ -7,7 +7,6 @@ function App() {
     <>
       <Routes>
         <Route path="/Image Cropper" element={<Homepage />} />
-        {/* <Route path="/temeditor" element={<Templateeditor />} /> */}
         <Route path="*" element={<Navigate to="/Image Cropper" />} />
       </Routes>
     </>

@@ -7,7 +7,17 @@ function Imageprovider(props) {
     croppedImage: [],
   };
   const [imgState, setImgState] = useState(initialData);
-  const addToSelectedImageHandler = () => {};
+  const addToSelectedImageHandler = (imgArray) => {
+    const copiedData = [...imgArray];
+    const ImageData = copiedData.map((image) => {
+      const imageUrl = URL.createObjectURL(image);
+      const imageName = image.name;
+      return { imageName, imageUrl };
+    });
+    setImgState((prev) => {
+      return { ...prev, selectedImage: ImageData };
+    });
+  };
   const addToCroppedImagesHandler = () => {};
   const removeFromCroppedImageHandler = () => {};
   const imgContext = {

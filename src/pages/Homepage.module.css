@@ -5,6 +5,7 @@
 .main_container {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 .box {
   /* border: 1px solid black; */
@@ -32,4 +33,9 @@
 .uploader:hover {
   color: rgb(125, 59, 35);
   cursor: pointer;
+}
+.btn_container{
+    display: flex;
+    gap: 40px;
+    justify-content: center;
 }
