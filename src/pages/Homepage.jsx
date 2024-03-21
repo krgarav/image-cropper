@@ -32,7 +32,7 @@ const Homepage = () => {
         const { width, height } = await getImageDimensions(image);
         setImgWidth(width);
         setImgHeight(height);
-        console.log(height,width)
+        console.log(height, width);
       };
       fn();
     }
@@ -74,27 +74,25 @@ const Homepage = () => {
         const blob = await new Promise((resolve) => {
           croppedCanvas.toBlob(resolve, "image/png");
         });
-        const options = {
-          suggestedName: filename,
-          types: [
-            {
-              description: "PNG Image",
-              accept: {
-                "image/png": [".png"],
-              },
-            },
-            {
-              description: "JPEG Image",
-              accept: {
-                "image/jpeg": [".jpeg", ".jpg"],
-              },
-            },
-          ],
-        };
-        const handle = await window.showSaveFilePicker(options);
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
+        // Create a blob URL
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Create a link element
+        const a = document.createElement("a");
+        a.href = blobUrl;
+
+        // Set the filename using the download attribute
+        a.download = filename;
+
+        // Append the link to the document body (optional)
+        document.body.appendChild(a);
+
+        // Trigger a click event on the link
+        a.click();
+
+        // Clean up: remove the link and revoke the blob URL
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
         nextHandler();
       } catch (error) {
         console.error("Error saving file:", error);
@@ -131,23 +129,27 @@ const Homepage = () => {
 
           {imgSelected.length !== 0 && (
             <section>
-              <div style={{ height:"70dvh",maxWidth:"2000px", padding: "10px", margin: "20px" }}>
+              <div
+              className={classes.cropper}
+                style={{
+                  height: "70dvh",
+                  padding: "10px",
+                  margin: "20px",
+                }}
+              >
                 <Cropper
                   src={image}
-                  style={{ height:"70dvh", width: `700px` }}
+                  style={{ height: "70dvh", width: `70dvw`, }}
                   guides={true}
                   ref={cropperRef}
                   initialAspectRatio={1}
                   viewMode={1}
                   minCropBoxHeight={10}
                   minCropBoxWidth={10}
-                  // background={true}
-                  // responsive={true}
-                  // autoCropArea={1}
-                  // checkOrientation={false}
-                  // dragMode="none"
-                 
-                  // zoomable={false}
+                  background={true}
+                  responsive={true}
+                  autoCropArea={1}
+                  checkOrientation={false}
                 />
               </div>
               <div className={classes.btn_container}>
