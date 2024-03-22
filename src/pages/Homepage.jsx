@@ -6,10 +6,11 @@ import ImageSelector from "../component/ImageSelector/ImageSelector";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
 import getImageDimensions from "../component/imageDimentions";
+import { toast } from "react-toastify";
 const Homepage = () => {
   const [image, setImage] = useState(null);
   const [currIndex, setCurrIndex] = useState(0);
@@ -18,6 +19,7 @@ const Homepage = () => {
   const imgSelected = imgCtx.selectedImage;
   const [imgWidth, setImgWidth] = useState("");
   const [imgHeight, setImgHeight] = useState("");
+  const folderNameRef = useRef();
 
   useEffect(() => {
     const imgUrl = imgCtx.selectedImage.map((item) => {
@@ -40,6 +42,7 @@ const Homepage = () => {
   const handleFileChange = (event) => {
     imgCtx.addToSelectedImage(event.target.files);
   };
+
   const prevHandler = () => {
     setCurrIndex((value) => {
       if (value === 0) {
@@ -62,6 +65,12 @@ const Homepage = () => {
     });
   };
   const saveHandler = async () => {
+    const folderName = folderNameRef.current.value;
+    // console.log("folder",folderNameRef.current.value)
+    if (!folderNameRef.current.value) {
+      toast.error("please enter folder Name !!!!");
+      return;
+    }
     const cropper = cropperRef.current?.cropper;
     const croppedCanvas = cropper.getCroppedCanvas();
     const fileObj = imgCtx.selectedImage.filter((item) => {
@@ -93,9 +102,11 @@ const Homepage = () => {
         // Clean up: remove the link and revoke the blob URL
         a.remove();
         URL.revokeObjectURL(blobUrl);
+        toast.success(`cropped image saved to folder - ${folderName}`);
         nextHandler();
       } catch (error) {
         console.error("Error saving file:", error);
+        toast.error(`Error in saving the cropped file...plz try again later`);
       }
     }
   };
@@ -130,7 +141,7 @@ const Homepage = () => {
           {imgSelected.length !== 0 && (
             <section>
               <div
-              className={classes.cropper}
+                className={classes.cropper}
                 style={{
                   height: "70dvh",
                   padding: "10px",
@@ -139,7 +150,7 @@ const Homepage = () => {
               >
                 <Cropper
                   src={image}
-                  style={{ height: "70dvh", width: `70dvw`, }}
+                  style={{ height: "70dvh", width: `70dvw` }}
                   guides={true}
                   ref={cropperRef}
                   initialAspectRatio={1}
@@ -158,6 +169,8 @@ const Homepage = () => {
                   color="secondary"
                   startIcon={<ArrowBackIosIcon />}
                   onClick={prevHandler}
+                  data-bs-toggle="modal"
+                  data-bs-target="#staticBackdrop"
                 >
                   PREV
                 </Button>
@@ -177,6 +190,10 @@ const Homepage = () => {
                 >
                   NEXT
                 </Button>
+                <input
+                  placeholder="Enter folder Name"
+                  ref={folderNameRef}
+                ></input>
               </div>
             </section>
           )}
