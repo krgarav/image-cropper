@@ -193,6 +193,7 @@ const Homepage = () => {
                 <input
                   placeholder="Enter folder Name"
                   ref={folderNameRef}
+                  style={{width:"120px"}}
                 ></input>
               </div>
             </section>
