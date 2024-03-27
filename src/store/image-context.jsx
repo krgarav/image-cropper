@@ -6,6 +6,7 @@ const imageContext = React.createContext({
   addToSelectedImage: () => {},
   addToCroppedImages: () => {},
   removeFromCroppedImage: () => {},
+  resetSelectedImage:()=>{}
 });
 
 export default imageContext;

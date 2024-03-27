@@ -18,6 +18,11 @@ function Imageprovider(props) {
       return { ...prev, selectedImage: ImageData };
     });
   };
+  const resetSelectedImageHandler = () => {
+    setImgState((prev) => {
+      return { ...prev, selectedImage: [] };
+    });
+  };
   const addToCroppedImagesHandler = () => {};
   const removeFromCroppedImageHandler = () => {};
   const imgContext = {
@@ -26,6 +31,7 @@ function Imageprovider(props) {
     addToSelectedImage: addToSelectedImageHandler,
     addToCroppedImages: addToCroppedImagesHandler,
     removeFromCroppedImage: removeFromCroppedImageHandler,
+    resetSelectedImage: resetSelectedImageHandler,
   };
 
   return (

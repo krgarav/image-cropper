@@ -69,37 +69,44 @@ const Homepage = () => {
     });
     const filename = fileObj[0].imageName;
 
+    // Get the customLocation from local storage
+    let customLocation = localStorage.getItem("customLocation");
+
+    // If customLocation doesn't exist, prompt the user to choose one
+    if (!customLocation) {
+      // Prompt the user to choose a location
+      customLocation = prompt("Enter the folder name for saving files:");
+      if (customLocation) {
+        // Save the chosen location to local storage
+        localStorage.setItem("customLocation", customLocation);
+      } else {
+        console.error("No custom location provided.");
+        return;
+      }
+    }
+
     if (croppedCanvas) {
       try {
         const blob = await new Promise((resolve) => {
           croppedCanvas.toBlob(resolve, "image/png");
         });
-        // Create a blob URL
-        const blobUrl = URL.createObjectURL(blob);
 
-        // Create a link element
-        const a = document.createElement("a");
-        a.href = blobUrl;
+        const formData = new FormData();
+        formData.append("file", blob);
+        formData.append("customLocation", customLocation);
 
-        // Set the filename using the download attribute
-        a.download = filename;
+        await fetch("http://localhost:3000/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-        // Append the link to the document body (optional)
-        document.body.appendChild(a);
-
-        // Trigger a click event on the link
-        a.click();
-
-        // Clean up: remove the link and revoke the blob URL
-        a.remove();
-        URL.revokeObjectURL(blobUrl);
+        // Continue with next handler if needed
         nextHandler();
       } catch (error) {
         console.error("Error saving file:", error);
       }
     }
   };
-  //   console.log( image.width / image.height)
   return (
     <>
       <DrawerAppBar activeRoute="Image Cropper" />
@@ -130,7 +137,7 @@ const Homepage = () => {
           {imgSelected.length !== 0 && (
             <section>
               <div
-              className={classes.cropper}
+                className={classes.cropper}
                 style={{
                   height: "70dvh",
                   padding: "10px",
@@ -139,14 +146,14 @@ const Homepage = () => {
               >
                 <Cropper
                   src={image}
-                  style={{ height: "70dvh", width: `70dvw`, }}
+                  style={{ height: "70dvh", width: `70dvw` }}
                   guides={true}
+                  zoomTo={0.5}
                   ref={cropperRef}
-                  initialAspectRatio={1}
                   viewMode={1}
                   minCropBoxHeight={10}
                   minCropBoxWidth={10}
-                  background={true}
+                  background={false}
                   responsive={true}
                   autoCropArea={1}
                   checkOrientation={false}
