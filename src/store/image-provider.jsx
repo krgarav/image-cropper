@@ -5,6 +5,7 @@ function Imageprovider(props) {
   const initialData = {
     selectedImage: [],
     croppedImage: [],
+    pathToSave: "",
   };
   const [imgState, setImgState] = useState(initialData);
   const addToSelectedImageHandler = (imgArray) => {
@@ -20,12 +21,24 @@ function Imageprovider(props) {
   };
   const addToCroppedImagesHandler = () => {};
   const removeFromCroppedImageHandler = () => {};
+  const addToPathHandler = (path) => {
+    setImgState((prev) => {
+      return { ...prev, pathToSave: path };
+    });
+  };
+  const resetSelectedImageHandler = () => {
+    setImgState((prev) => {
+      return { ...prev, selectedImage: [] };
+    });
+  };
   const imgContext = {
     selectedImage: imgState.selectedImage,
     croppedImage: imgState.croppedImage,
     addToSelectedImage: addToSelectedImageHandler,
     addToCroppedImages: addToCroppedImagesHandler,
     removeFromCroppedImage: removeFromCroppedImageHandler,
+    addToPath: addToPathHandler,
+    resetSelectedImage: resetSelectedImageHandler,
   };
 
   return (

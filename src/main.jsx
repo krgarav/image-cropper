@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import Imageprovider from "./store/image-provider.jsx";
-
+import "bootstrap/dist/css/bootstrap.min.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

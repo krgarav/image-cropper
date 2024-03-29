@@ -54,9 +54,9 @@ function DrawerAppBar(props) {
     window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex" ,height:"5dvh",alignItems:"center" }}>
       <CssBaseline />
-      <AppBar component="nav" position="static">
+      <AppBar component="nav" position="static" >
         <Toolbar>
           <IconButton
             color="inherit"
