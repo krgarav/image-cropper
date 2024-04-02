@@ -2,17 +2,18 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import DrawerAppBar from "../component/Appbar/Appbar";
 import classes from "./Homepage.module.css";
 import imageContext from "../store/image-context";
-import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import { Button, Slider } from "@mui/material";
+import { Button, IconButton, TextField } from "@mui/material";
 import Cropper from "react-cropper";
-import "cropperjs/dist/cropper.css";
-import getImageDimensions from "../component/imageDimentions";
 import { toast } from "react-toastify";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Rotate90DegreesCcwIcon from "@mui/icons-material/Rotate90DegreesCcw";
+import { MdOutlineRotate90DegreesCw } from "react-icons/md";
+import { Row, Col } from "react-bootstrap";
+import "cropperjs/dist/cropper.css";
 const Homepage = () => {
   const [image, setImage] = useState(null);
   const [currIndex, setCurrIndex] = useState(0);
@@ -24,8 +25,8 @@ const Homepage = () => {
   const [imageName, setImageName] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [rotate, setRotate] = useState(0);
-  const folderNameRef = useRef();
   const [loading, setLoading] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
   const theme = createTheme({
     palette: {
@@ -38,6 +39,19 @@ const Homepage = () => {
     },
   });
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowRight") {
+        nextHandler();
+      } else if (event.key === "ArrowLeft") {
+        prevHandler();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+  useEffect(() => {
     const imgUrl = imgCtx.selectedImage.map((item) => {
       return item.imageUrl;
     });
@@ -47,20 +61,34 @@ const Homepage = () => {
     setImageName(imageName[currIndex]);
     setImage(imgUrl[currIndex]);
   }, [imgCtx.selectedImage, currIndex]);
+  // useEffect(() => {
+  //   if (!!image) {
+  //     const fn = async () => {
+  //       const { width, height } = await getImageDimensions(image);
+  //       setImgWidth(width);
+  //       setImgHeight(height);
+  //     };
+  //     fn();
+  //   }
+  // }, [image]);
+
   useEffect(() => {
-    if (!!image) {
-      const fn = async () => {
-        const { width, height } = await getImageDimensions(image);
-        setImgWidth(width);
-        setImgHeight(height);
-      };
-      fn();
+    if (cropperRef.current !== null) {
+      const cropper = cropperRef.current.cropper;
+      const imageData = cropper.getImageData();
+      const imageWidth = imageData.width;
+      const imageHeight = imageData.height;
+      setImgHeight(imageHeight);
+      setImgWidth(imageWidth);
     }
-  }, [image]);
+  }, [cropperRef, rotate]);
 
   const handleFileChange = (event) => {
-    console.log(event.target.files);
     imgCtx.addToSelectedImage(event.target.files);
+    const files = event.target.files;
+    if (files.length > 0) {
+      const directoryPath = extractDirectoryPath(files[0].webkitRelativePath);
+    }
   };
   const prevHandler = () => {
     setCurrIndex((value) => {
@@ -85,8 +113,7 @@ const Homepage = () => {
 
   const saveHandler = async () => {
     setLoading(true);
-    const folderName = folderNameRef.current.value;
-    if (!folderNameRef.current.value) {
+    if (!folderName) {
       toast.error("please enter folder Name !!!!");
       setLoading(false);
       return;
@@ -106,7 +133,7 @@ const Homepage = () => {
         const formData = new FormData();
         formData.append("file", blob, filename);
         formData.append("folderName", folderName);
-        await fetch("http://localhost:3000/upload", {
+        await fetch("http://localhost:3400/upload", {
           method: "POST",
           body: formData,
         });
@@ -124,8 +151,11 @@ const Homepage = () => {
   };
   const clearHandler = () => {
     imgCtx.resetSelectedImage();
+    setCurrIndex(0);
+    setFolderName("");
+    setImage("");
+    setRotate(0);
   };
-
   const handleDrop = (event) => {
     event.preventDefault();
     const items = event.dataTransfer.items;
@@ -160,24 +190,20 @@ const Homepage = () => {
   const traverseFileTree = (entry, filesArray) => {
     return new Promise((resolve, reject) => {
       if (entry.isFile) {
-        // Handle file
         entry.file((file) => {
           if (file.type.startsWith("image/")) {
-            // Add image file to the files array
             filesArray.push(file);
           }
           resolve();
         });
       } else if (entry.isDirectory) {
-        // Iterate through directory contents
         const directoryReader = entry.createReader();
         directoryReader.readEntries((entries) => {
           const promises = [];
           for (let i = 0; i < entries.length; i++) {
-            // Recursively traverse each directory entry
             promises.push(traverseFileTree(entries[i], filesArray));
           }
-          // Wait for all promises to resolve
+
           Promise.all(promises).then(resolve);
         });
       }
@@ -194,15 +220,55 @@ const Homepage = () => {
 
   const handleRightRotate = () => {
     const cropper = cropperRef.current.cropper;
-    cropper.rotate(rotate + 1);
+    cropper.rotate(1);
+    setRotate(rotate + 1);
   };
   const handleLeftRotate = () => {
     const cropper = cropperRef.current.cropper;
-    cropper.rotate(rotate - 1);
+    cropper.rotate(-1);
+    setRotate(rotate - 1);
   };
+  const handleNinetyLeft = () => {
+    const cropper = cropperRef.current.cropper;
+    cropper.rotate(-90);
+    setRotate(rotate - 90);
+  };
+  const handleNinetyRight = () => {
+    const cropper = cropperRef.current.cropper;
+    cropper.rotate(+90);
+    setRotate(rotate + 90);
+  };
+  const handleFolderChange = (event) => {
+    setFolderName(event.target.value);
+  };
+  function extractDirectoryPath(webkitRelativePath) {
+    // The webkitRelativePath is in the form 'directory/subdirectory/filename'
+    // We can split it to get the directory path
+    const parts = webkitRelativePath.split("/");
+
+    // Remove the last part which represents the filename
+    parts.pop();
+
+    // Join the remaining parts to get the directory path
+    const directoryPath = parts.join("/");
+
+    return directoryPath;
+  }
+
   return (
     <>
-      <DrawerAppBar activeRoute="Image Cropper" />
+      <DrawerAppBar
+        activeRoute="Image Cropper"
+        fileName={
+          <article>
+            <span style={{ color: "ivory" }}>
+              {currIndex + 1} of {imgCtx.selectedImage.length}
+            </span>
+            <span style={{ color: "whiteSmoke" }}>:</span>
+            {imageName}
+          </article>
+        }
+      />
       <main className={classes.main_container}>
         <div className={classes.box}>
           {imgSelected.length === 0 && (
@@ -236,30 +302,35 @@ const Homepage = () => {
 
           {imgSelected.length !== 0 && (
             <section>
-              <h3 className={classes.image_header}>{imageName}</h3>
               <div
                 className={classes.cropper}
                 style={{
-                  height: "70dvh",
-                  padding: "10px",
-                  marginBottom: "20px",
+                  padding: "5px",
+                  marginBottom: "10px",
+                  marginTop: "10px",
+                  border: "1px solid black",
+                  borderRadius: "5px",
                 }}
               >
                 <Cropper
                   src={image}
-                  style={{ height: "70dvh", width: `70dvw` }}
+                  style={{
+                    height: "70dvh",
+                    width: `70dvw`,
+                  }}
                   guides={true}
                   ref={cropperRef}
-                  initialAspectRatio={100}
+                  initialAspectRatio={0}
                   viewMode={1}
                   minCropBoxHeight={10}
                   minCropBoxWidth={10}
                   background={true}
                   responsive={true}
-                  autoCropArea={1}
+                  autoCropArea={0}
                   checkOrientation={false}
                   zoomable={false}
                   rotatable={true}
+                  autoCrop={false}
                 />
               </div>
               <div className={classes.rotate_section}>
@@ -271,6 +342,21 @@ const Homepage = () => {
                   >
                     Rotate 1&deg; left
                   </Button>
+                  <IconButton
+                    color="secondary"
+                    aria-label="rotate left"
+                    onClick={handleNinetyLeft}
+                  >
+                    <Rotate90DegreesCcwIcon />
+                  </IconButton>
+
+                  <IconButton
+                    color="secondary"
+                    aria-label="rotate right"
+                    onClick={handleNinetyRight}
+                  >
+                    <MdOutlineRotate90DegreesCw />
+                  </IconButton>
                   <Button
                     variant="contained"
                     color="ochre"
@@ -280,65 +366,77 @@ const Homepage = () => {
                   </Button>
                 </ThemeProvider>
               </div>
-              <div className={classes.btn_container}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={clearHandler}
+              <Row>
+                <Col
+                  style={{ display: "flex", justifyContent: "start" }}
+                  sm={3}
+                  md={3}
+                  lg={3}
                 >
-                  CLEAR IMAGES
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<ArrowBackIosIcon />}
-                  onClick={prevHandler}
-                >
-                  PREV
-                </Button>
-                {loading && (
-                  <LoadingButton
-                    loading
-                    loadingPosition="start"
-                    startIcon={<SaveIcon />}
-                    variant="outlined"
-                  >
-                    SAVING
-                  </LoadingButton>
-                )}
-                {!loading && (
                   <Button
-                    variant="outlined"
-                    color="success"
-                    startIcon={<SaveIcon />}
-                    onClick={saveHandler}
+                    variant="contained"
+                    color="primary"
+                    onClick={clearHandler}
                   >
-                    SAVE
+                    CLEAR IMAGES
                   </Button>
-                )}
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  endIcon={<ArrowForwardIosIcon />}
-                  onClick={nextHandler}
+                </Col>
+                <Col sm={6} md={6} lg={6} className={classes.btn_container}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<ArrowBackIosIcon />}
+                    onClick={prevHandler}
+                  >
+                    PREV
+                  </Button>
+                  {loading && (
+                    <LoadingButton
+                      loading
+                      loadingPosition="start"
+                      startIcon={<SaveIcon />}
+                      variant="outlined"
+                    >
+                      SAVING
+                    </LoadingButton>
+                  )}
+                  {!loading && (
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      startIcon={<SaveIcon />}
+                      onClick={saveHandler}
+                    >
+                      SAVE
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    endIcon={<ArrowForwardIosIcon />}
+                    onClick={nextHandler}
+                  >
+                    NEXT
+                  </Button>
+                </Col>
+                <Col
+                  style={{ display: "flex", justifyContent: "end" }}
+                  sm={3}
+                  md={3}
+                  lg={3}
                 >
-                  NEXT
-                </Button>
-                {/* <Slider
-                  size="small"
-                  defaultValue={70}
-                  aria-label="Small"
-                  valueLabelDisplay="auto"
-                  value={rotate}
-                  onChange={handleRotate}
-                /> */}
-
-                <input
-                  placeholder="Enter folder Name"
-                  ref={folderNameRef}
-                  style={{ width: "120px" }}
-                ></input>
-              </div>
+                  <TextField
+                    id="outlined-textarea"
+                    label="Destination Folder Name"
+                    placeholder="Enter folder Name"
+                    multiline
+                    color="secondary"
+                    value={folderName}
+                    focused
+                    onChange={handleFolderChange}
+                  />
+                </Col>
+              </Row>
             </section>
           )}
         </div>

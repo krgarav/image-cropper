@@ -15,14 +15,16 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { NavLink } from "react-router-dom";
+import imageContext from "../../store/image-context";
 const drawerWidth = 240;
 const navItems = ["Image Cropper"];
 
 function DrawerAppBar(props) {
+  const imgCtx = React.useContext(imageContext);
   const { window } = props;
   const { activeRoute } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-
+  const { fileName } = props;
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
@@ -30,7 +32,7 @@ function DrawerAppBar(props) {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-      IMAGE CROPPER
+        IMAGE CROPPER
       </Typography>
       <Divider />
       <List>
@@ -54,10 +56,10 @@ function DrawerAppBar(props) {
     window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <Box sx={{ display: "flex" ,height:"5dvh",alignItems:"center" }}>
+    <Box sx={{ display: "flex", height: "5dvh", alignItems: "center" }}>
       <CssBaseline />
-      <AppBar component="nav" position="static" >
-        <Toolbar>
+      <AppBar component="nav" position="static">
+        <Toolbar sx={{ justifyContent: "space-between" }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -70,9 +72,12 @@ function DrawerAppBar(props) {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
+            sx={{ display: { xs: "none", sm: "block" } }}
           >
             IMAGE CROPPER
+          </Typography>
+          <Typography variant="h5" component="div">
+            {imgCtx.selectedImage.length > 0 && fileName}
           </Typography>
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
             {navItems.map((item) => (
