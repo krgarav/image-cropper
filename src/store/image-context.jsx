@@ -1,6 +1,6 @@
 import React from "react";
 
-const imageContext = React.createContext({
+const ImageContext = React.createContext({
   selectedImage: [],
   croppedImage: [],
   pathToSave: "",
@@ -11,4 +11,4 @@ const imageContext = React.createContext({
   resetSelectedImage:()=>{}
 });
 
-export default imageContext;
+export default ImageContext;
